@@ -7,7 +7,7 @@ We use classes to create objects. In defining a class, we focus on states and be
 
 *Instance variables keep track of a state and instance methods expose behavior for objects.*
 
-- A **constructor** is a method that gets triggered by creating a new object. 
+- A **constructor** is a method that gets triggered by creating a new object. (Whenever the `new` method is called upon the class.)
 - An **instance variable** is prepended by the `@` symbol, e.g., `@name`. It exists as long as the object instance exists. 
 
 **Accessor** methods are shorthand for getter and setter methods. Use the `attr_accessor` to create getter and setter methods. 

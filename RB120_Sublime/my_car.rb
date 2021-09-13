@@ -1,6 +1,16 @@
 class MyCar
-	attr_accessor :color, :model  
-	attr_reader :year
+	@@total_mileage = 0
+
+	attr_accessor :color 
+	attr_reader :year, :model
+
+	def self.calculate_mileage(gallons, miles)
+		puts "My car gets #{miles / gallons} miles to the gallon."
+	end
+
+	def self.display_mileage
+		@@total_mileage
+	end
 
 	def initialize(y, c, m)
 		@year = y
@@ -11,6 +21,10 @@ class MyCar
 
 	def info
 		"My car is a #{color} #{year} #{model}."
+	end
+
+	def travel_distance(num)
+		@@total_mileage += num 
 	end
 
 	def speed_up(num)
@@ -35,19 +49,14 @@ class MyCar
 	def spray_paint(new_color)
 		self.color = new_color 
 	end 
+
+	def to_s
+		"My car is a #{self.color} #{self.year} #{self.model} with #{@@total_mileage} miles on it."
+	end
 end 
 
 
 honda = MyCar.new('2006', 'blue', 'Honda')
-puts honda.speed_up(20)
-puts honda.current_speed
-puts honda.brake(7)
-puts honda.current_speed
-puts honda.shut_down
+p MyCar.display_mileage
 
-puts honda.year
-honda.color = 'red'
-puts honda.info
 
-honda.spray_paint('yellow')
-puts honda.info
