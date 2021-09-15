@@ -1,32 +1,26 @@
-class MyCar
-	@@total_mileage = 0
+class Vehicle 
+	@@total_vehicles = 0 
 
 	attr_accessor :color 
 	attr_reader :year, :model
-
-	def self.calculate_mileage(gallons, miles)
-		puts "My car gets #{miles / gallons} miles to the gallon."
-	end
-
-	def self.display_mileage
-		@@total_mileage
-	end
 
 	def initialize(y, c, m)
 		@year = y
 		@color = c
 		@model = m
-		@current_speed = 0 
+		@current_speed = 0
+		@@total_vehicles += 1 
 	end
 
-	def info
-		"My car is a #{color} #{year} #{model}."
+	def self.view_total_vehicles
+		"This program has created #{@@total_vehicles} total_vehicles."
 	end
 
-	def travel_distance(num)
-		@@total_mileage += num 
+	def self.mileage(gallons, miles)
+		"Mileage is #{miles / gallons}."
 	end
 
+	# speedometer
 	def speed_up(num)
 		@current_speed += num 
 		"You accelerated #{num} mph."
@@ -46,17 +40,36 @@ class MyCar
 		"The car is off."
 	end 
 
+	# new paint job 
 	def spray_paint(new_color)
 		self.color = new_color 
-	end 
+	end
 
 	def to_s
-		"My car is a #{self.color} #{self.year} #{self.model} with #{@@total_mileage} miles on it."
+		"My vehicle is a #{self.color} #{self.year} #{self.model}."
 	end
 end 
 
+module Towable 
+	def can_tow?(pounds)
+		pounds < 2000 ? true : false 
+	end
+end
 
-honda = MyCar.new('2006', 'blue', 'Honda')
-p MyCar.display_mileage
+class MyCar < Vehicle
+	NUMBER_OF_DOORS = 4
+end 
+
+class MyTruck < Vehicle
+	include Towable 
+
+	NUMBER_OF_DOORS = 2
+end 
+
+honda = MyCar.new(2006, 'gray', 'Accord')
+chevy = MyTruck.new(2015, 'red', 'Ranger')
+
+puts honda
+puts chevy
 
 
