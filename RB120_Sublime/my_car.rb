@@ -48,6 +48,16 @@ class Vehicle
 	def to_s
 		"My vehicle is a #{self.color} #{self.year} #{self.model}."
 	end
+
+	def age 
+		"Your vehicle is #{years_old} years old!"
+	end 
+
+	private 
+
+	def years_old 
+		Time.now.year - self.year
+	end 
 end 
 
 module Towable 
@@ -71,5 +81,4 @@ chevy = MyTruck.new(2015, 'red', 'Ranger')
 
 puts honda
 puts chevy
-
-
+puts honda.age
