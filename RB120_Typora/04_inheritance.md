@@ -33,6 +33,7 @@ Another way to DRY up code in Ruby is to implement modules. Modules allow for ce
   - class: identity 
   - interface: behavior / ability 
 - modules can't be instantiated, i.e., objects cannot be created from modules. Modules are used only for namespacing and grouping common methods together. 
+- methods in mixin modules should be defined without using `self`. 
 
 **Method Lookup Path** 
 
@@ -63,4 +64,16 @@ Method access control is implemented in Ruby through the use of the `public`, `p
 **Accidental Overrides**
 
 Remember that every class you create inherently subclasses from `Object`. Methods defined in the `Object` are available in all classses. Remember that through inheritance, a subclass's method can override a superclass's method. If you accidentally override a method originally defined in `Object`, it can have far-reaching effects on your code. One `Object` instance method that's easily overriden without any side effects is the `to_s` method, which you'll do often when you want a different string representation of an object. Familiarize yourself with the common `Object` methods in order to avoid accidentally overriding them. 
+
+**Modules to Know**
+
+- Comparable
+
+```ruby 
+def <=>(other)
+  cost <=> other.cost
+end 
+```
+
+
 
