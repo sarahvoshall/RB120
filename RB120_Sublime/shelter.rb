@@ -1,40 +1,40 @@
 class Owner
-	attr_reader :name 
-	attr_accessor :pets, :number_of_pets
+  attr_reader :name 
+  attr_accessor :pets, :number_of_pets
 
-	def initialize(name)
-		@name = name 
-		@pets = []
-		@number_of_pets = 0 
-	end 
+  def initialize(name)
+    @name = name 
+    @pets = []
+    @number_of_pets = 0 
+  end 
 end 
 
 class Pet 
-	attr_reader :name, :animal 
+  attr_reader :name, :animal 
 
-	def initialize(animal, name)
-		@animal = animal
-		@name = name 
-	end 
+  def initialize(animal, name)
+    @animal = animal
+    @name = name 
+  end 
 end 
 
 class Shelter
-	@@adopters = [] 
+  @@adopters = [] 
 
-	def adopt(owner, pet)
-		owner.pets << pet
-		owner.number_of_pets += 1 
-		@@adopters << owner unless @@adopters.include?(owner)
-	end 
+  def adopt(owner, pet)
+    owner.pets << pet
+    owner.number_of_pets += 1 
+    @@adopters << owner unless @@adopters.include?(owner)
+  end 
 
-	def print_adoptions
-		@@adopters.each do |adopter| 
-			puts "#{adopter.name} has adopted the following pets:"
-			adopter.pets.each do |pet|
-				puts "a #{pet.animal} named #{pet.name}"
-			end
-		end
-	end 
+  def print_adoptions
+    @@adopters.each do |adopter| 
+      puts "#{adopter.name} has adopted the following pets:"
+      adopter.pets.each do |pet|
+        puts "a #{pet.animal} named #{pet.name}"
+      end
+    end
+  end 
 end 
 
 
