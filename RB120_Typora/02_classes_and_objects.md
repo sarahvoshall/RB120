@@ -30,5 +30,5 @@ Both of the above example do the same thing. The `attr_accessor` method takes a 
 
 Accessor methods (getter and setter methods) give us a way to expose and change an object's state. *It's better to call accessor methods than to reference instance variables.* 
 
-
+**!** Access instance variables inside the class without the `@` if the getter method is available. *Unless you're reassigning the instance variable, then the `@` needs to be used.* 
 

@@ -1,91 +1,61 @@
-module Walkable 
-  def walk
-    "#{name} #{gait} forward"
-  end 
-end
+module Moveable
+  attr_accessor :speed, :heading
+  attr_writer :fuel_capacity, :fuel_efficiency
 
-class Person
-  include Walkable
-  attr_reader :name
-
-  def initialize(name)
-    @name = name
-  end
-
-  private
-
-  def gait
-    "strolls"
-  end
-end
-
-class Cat
-  include Walkable
-  attr_reader :name
-
-  def initialize(name)
-    @name = name
-  end
-
-  private
-
-  def gait
-    "saunters"
-  end
-end
-
-class Cheetah
-  include Walkable 
-  attr_reader :name
-
-  def initialize(name)
-    @name = name
-  end
-
-  private
-
-  def gait
-    "runs"
-  end
-end
-
-class Noble
-  include Walkable 
-  attr_reader :name, :title 
-
-  def initialize(name, title)
-    @name = name
-    @title = title 
-  end 
-
-  def walk
-    "#{@title} " + super
-  end 
-
-  private 
-
-  def gait 
-    "struts"
+   def range
+    @fuel_capacity * @fuel_efficiency
   end
 end 
 
-byron = Noble.new("Byron", "Lord")
-p byron.walk
-# => "Lord Byron struts forward"
+class WheeledVehicle
+  include Moveable 
 
-byron.name
-# => "Byron"
-byron.title
-# => "Lord"
+  def initialize(tire_array, km_traveled_per_liter, liters_of_fuel_capacity)
+    @tires = tire_array
+    self.fuel_efficiency = km_traveled_per_liter
+    self.fuel_capacity = liters_of_fuel_capacity
+  end
 
-mike = Person.new("Mike")
-mike.walk
-# => "Mike strolls forward"
+  def tire_pressure(tire_index)
+    @tires[tire_index]
+  end
 
-kitty = Cat.new("Kitty")
-kitty.walk
-# => "Kitty saunters forward"
+  def inflate_tire(tire_index, pressure)
+    @tires[tire_index] = pressure
+  end
+end
 
-flash = Cheetah.new("Flash")
-flash.walk
-# => "Flash runs forward"
+class Auto < WheeledVehicle
+  def initialize
+    # 4 tires are various tire pressures
+    super([30,30,32,32], 50, 25.0)
+  end
+end
+
+class Motorcycle < WheeledVehicle
+  def initialize
+    # 2 tires are various tire pressures
+    super([20,20], 80, 8.0)
+  end
+end
+
+class Seacraft 
+  include Moveable
+
+  attr_reader :propeller_count, :hull_count
+
+  def initialize(num_propellers, num_hulls, km_traveled_per_liter, liters_of_fuel_capacity)
+    self.fuel_efficiency = km_traveled_per_liter
+    self.fuel_capacity = liters_of_fuel_capacity
+  end
+
+  
+end 
+
+class Catamaran > Seacraft; end
+
+class Motorboat > Seacraft 
+  def initialize(km_traveled_per_liter, liters_of_fuel_capacity)
+    super(1, 1, km_traveled_per_liter, liters_of_fuel_capacity)
+  end
+end 
