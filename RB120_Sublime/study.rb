@@ -42,14 +42,16 @@ end
 class Seacraft 
   include Moveable
 
+  def range 
+    super + 10
+  end 
+  
   attr_reader :propeller_count, :hull_count
 
   def initialize(num_propellers, num_hulls, km_traveled_per_liter, liters_of_fuel_capacity)
     self.fuel_efficiency = km_traveled_per_liter
     self.fuel_capacity = liters_of_fuel_capacity
   end
-
-  
 end 
 
 class Catamaran > Seacraft; end

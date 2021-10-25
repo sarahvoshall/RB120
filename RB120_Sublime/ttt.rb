@@ -16,6 +16,20 @@ class Board
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
+  def joinor(array, delimiter=",", conjunction="or")
+    if array.size == 2 
+      array.join(" #{conjunction} ")
+    else
+      array.map do |element|
+        if element == array.last
+          "#{conjunction} #{element}"
+        else 
+          "#{element}#{delimiter}"
+        end 
+      end.join(' ')
+    end
+  end
+
   def full?
     unmarked_keys.empty?
   end
@@ -117,6 +131,7 @@ class TTTGame
   private
 
   def main_game
+    player_choose_marker
     loop do
       display_board
       player_move
@@ -126,6 +141,20 @@ class TTTGame
       display_play_again_message
     end
   end
+
+  # def player_choose_marker
+  #   puts "Choose any character to be your marker."
+  #   answer = nil
+
+  #   loop do
+  #     answer = gets.chomp
+
+  #     break if answer.size == 1
+  #     puts "That's an invalid choice. Please choose again."
+  #   end
+
+  #   HUMAN_MARKER = answer
+  # end
 
   def player_move
     loop do
