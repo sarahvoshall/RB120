@@ -29,7 +29,18 @@ attr_accessor :name
 
 Both of the above example do the same thing. The `attr_accessor` method takes a symbol as an argument which it uses to create the method name for the getter and setter methods. If you only want the getter, use `attr_reader` and if you only want the setter, use `attr_writer`. All `attr_*` methods take a symbol parameter. Multiple symbols can be provided to track more states. 
 
-Accessor methods (getter and setter methods) give us a way to expose and change an object's state. *It's better to call accessor methods than to reference instance variables.* 
+Accessor methods (getter and setter methods) give us a way to expose and change an object's state. *It's better to call accessor methods than to reference instance variables directly.* 
 
-**!** Access instance variables inside the class without the `@` if the getter method is available. *Unless you're reassigning the instance variable, then the `@` needs to be used.* 
+When calling the setter method within a method definition, prepend `self` to the method name in order for the program to know that it should call a method and not initializing a new local variable. (This syntax could also be used when calling the getter methods for sake of consistency, but it is not required.)
+
+```ruby
+def change_info(name, height) # use self to clarify method call
+  self.name = name
+  self.height = height
+end 
+
+def display_info(name, height) 
+  "#{self.name} is #{self.height} tall."
+end
+```
 

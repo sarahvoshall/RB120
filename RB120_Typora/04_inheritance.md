@@ -35,7 +35,7 @@ Another way to DRY up code in Ruby is to implement modules. Modules allow for ce
 - modules can't be instantiated, i.e., objects cannot be created from modules. Modules are used only for namespacing and grouping common methods together. 
 - methods in mixin modules should be defined without using `self`. 
 
-**Method Lookup Path** 
+**Method Lookup Path**: the order in which classes are inspected when you call a method. https://launchschool.com/books/oo_ruby/read/inheritance
 
 **More Modules** 
 
@@ -51,19 +51,21 @@ Another way to DRY up code in Ruby is to implement modules. Modules allow for ce
 
 **Method Access Control**
 
-- access modifiers allow or restrict access to a particular thing. In Ruby, we are mostly concerned with restricting access to certain methods defined within a class. 
+- access modifiers allow or restrict access to a particular thing. In Ruby, we are concerned with restricting access to certain methods defined within a class. 
 
 Method access control is implemented in Ruby through the use of the `public`, `private`, and `protected` access modifiers. 
 
-- public methods are available to anyone who knows either the class name or the object's name . These methods are readily available for the rest of the program to use and comprise the class's interface (how other classes and objects will interact with this class and its objects)
-- private methods are at work in the class but are not available to the rest of the program. `private` methods are only accessible from other methods within the class and are not accessible outside the class definition at all 
+- `public` methods are available to anyone who knows either the class name or the object's name . These methods are readily available for the rest of the program to use and *comprise the class's interface (how other classes and objects will interact with this class and its objects)*
+- `private` methods are at work in the class but are not available to the rest of the program. `private` methods are only accessible from other `public` methods within the class and are not accessible outside the class definition at all 
+  - *Note: Before Ruby 2.7, private methods are only accessible from inside the class when called without `self`. Since 2.7, private methods can be called with `self` as the caller, private methods cannot be called with any other object -- not even one of the same type. You can only call a private method with the current object.*
 - protected methods 
   - inside the class, `protected` methods are accessible like `public` methods
   - outside the class, `protected` methods act like `private` methods 
+  - Note: Since 2.7, the main difference is that `private` methods may noe be called with a *difference instance object* within the public method. However, `protected` methods can be called with a different object within the public method. 
 
-**Accidental Overrides**
+**Accidental Method Overriding**
 
-Remember that every class you create inherently subclasses from `Object`. Methods defined in the `Object` are available in all classses. Remember that through inheritance, a subclass's method can override a superclass's method. If you accidentally override a method originally defined in `Object`, it can have far-reaching effects on your code. One `Object` instance method that's easily overriden without any side effects is the `to_s` method, which you'll do often when you want a different string representation of an object. Familiarize yourself with the common `Object` methods in order to avoid accidentally overriding them. 
+Remember that every class you create inherently subclasses from `Object`. Methods defined in the `Object` are available in all classes. Remember that through inheritance, a subclass's method can override a superclass's method. If you accidentally override a method originally defined in `Object`, it can have far-reaching effects on your code. One `Object` instance method that's easily overridden without any side effects is the `to_s` method, which you'll do often when you want a different string representation of an object. Familiarize yourself with the common `Object` methods in order to avoid accidentally overriding them. 
 
 **Modules to Know**
 
@@ -75,5 +77,5 @@ def <=>(other)
 end 
 ```
 
-
+Returns -1 if the left operand is less, 0 if the left operand is equal to the right, and 1 if the right is greater. 
 
