@@ -2,7 +2,7 @@
 
 Classes group common behaviors and objects encapsulate state. An object's state is saved in an object's instance variable. Instance methods can operate on instance variables. Usually the state is a string or number. 
 
-Objects that are stored as state within another object are called **collaborator objects**. Collaborator objects are usually custom objects, i.e., defined by the programmer and not inherited from the Ruby core library. However, collaborator objects are not strictly custom objects, *even a string object stored within an instance variable is technically a collaborator object.* 
+Objects that are stored as state (assigned to an instance variable) within another object are called **collaborator objects**. Collaborator objects are usually custom objects, i.e., defined by the programmer and not inherited from the Ruby core library. However, collaborator objects are not strictly custom objects, *even a string object stored within an instance variable is technically a collaborator object.* 
 
 **?** Collaborator objects also represent the connections between various actors in your program. **?**
 

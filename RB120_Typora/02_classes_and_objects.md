@@ -1,14 +1,17 @@
 **Classes and Objects: Part 1**
 
-We use classes to create objects. In defining a class, we focus on states and behaviors. 
+We use classes to create objects. In defining a class, we focus on states and behaviors. A class is a template for an object. It is a bluepring that describes the state and behavior that the objects of the class all share. Objects created at runtime from a class are called instances of the particular class. 
 
 - **States** (variables) track attributes for individual objects. *Every object's state is unique.*
+  - An object's attributes are the data items bundled inside that object. These items are also called instance variables. An instance variable is a variable defined in the class for which each object in the class has a separate copy. 
 - **Behaviors** (methods) are what objects are capable of doing.  
 
 *Instance variables keep track of a state and instance methods expose behavior for objects.* States (instance variables) allows objects of the same class to have unique attributes while sharing common behaviors (instance methods). 
 
 - A **constructor** is a method that gets triggered whenever a new object is created. (Whenever the `new` method is called upon the class.) 
   - `initialize`: Calling `new` also calls `initialize`. You can pass arguments to `initialize` through `new`. Is `initialize` the only constructor in Ruby? 
+  - The constructor method in Ruby is `initialize` 
+  - The purpose of a constructor is to initiate the state of an object. Construtors do not return any values. 
 - An **instance variable** is prepended by the `@` symbol, e.g., `@name`. It exists as long as the object instance exists. Instance variables are one of the ways that we tie data to objects. 
 
 **Accessor** methods are shorthand for getter and setter methods. Use the `attr_accessor` to create getter and setter methods. 

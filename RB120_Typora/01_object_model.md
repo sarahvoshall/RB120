@@ -1,6 +1,11 @@
 **The Object Model: "Everything is an object in Ruby."**
 
-Created so that larger programs could be written and modified without affecting the entire program: a way to section off code so that the program can be an interaction of many small parts and not 'one massive blob of dependency.'
+There's three types of programming languages: procedural, functional, and object-oriented. Ruby is an object-oriented language with some procedural and functional features. Created so that larger programs could be written and modified without affecting the entire program: a way to section off code so that the program can be an interaction of many small parts and not 'one massive blob of dependency.'
+
+- Abstraction is simplifying complex reality by modeling classes appropriate to the problem
+- Polymorphism is the process of using an operator or function in different ways for different data input
+- Encapsulation hides the implementation details of a class from other objects 
+- Inheritance is a way to form new classes using classes that have already been defined 
 
 **Encapsulation:** A form of data protection that only allows data to be manipulated with obvious intention. It involves hiding pieces of functionality and making those unavailable to the rest of the code base. It defines boundaries in an application and allows code to achieve higher complexity. Ruby accomplishes this task by creating objects and exposing interfaces (methods) to interact with those objects. 
 
