@@ -1,70 +1,63 @@
-class Shelter
+module Fuel
+  attr_accessor :speed, :heading
+  attr_writer :fuel_capacity, :fuel_efficiency
+
+  def range
+    @fuel_capacity * @fuel_efficiency
+  end
+end
+
+class WheeledVehicle
+  include Fuel
+
+  def initialize(tire_array, km_traveled_per_liter, liters_of_fuel_capacity)
+    @tires = tire_array
+    @fuel_efficiency = km_traveled_per_liter
+    @fuel_capacity = liters_of_fuel_capacity
+  end
+
+  def tire_pressure(tire_index)
+    @tires[tire_index]
+  end
+
+  def inflate_tire(tire_index, pressure)
+    @tires[tire_index] = pressure
+  end
+end
+
+class Auto < WheeledVehicle
   def initialize
-    @records = []
-  end
-
-  def adopt(adopter, adoptee)
-    adopter.pets << adoptee
-    @records << adopter unless @records.include?(adopter)
-  end
-
-  def print_adoptions
-    @records.each do |adopter|
-      puts "#{adopter.name} has adopted the following pets:"
-      adopter.pets.each { |pet| puts pet }
-    end
+    # 4 tires are various tire pressures
+    super([30,30,32,32], 50, 25.0)
   end
 end
 
-class Pet
-  attr_reader :breed, :name
-
-  def initialize(breed, name)
-    @breed = breed
-    @name = name
-  end
-
-  def to_s
-    "a #{breed} named #{name}"
+class Motorcycle < WheeledVehicle
+  def initialize
+    # 2 tires are various tire pressures
+    super([20,20], 80, 8.0)
   end
 end
 
-class Owner
-  attr_reader :name
-  attr_accessor :pets
+class Seacraft
+  include Fuel
 
-  def initialize(name)
-    @name = name
-    @pets = []
+  attr_reader :propeller_count, :hull_count
+
+  def initialize(num_propellers, num_hulls, km_traveled_per_liter, liters_of_fuel_capacity)
+    # ... code omitted ...
   end
 
-  def number_of_pets
-    @pets.size
+  def range
+    super + 10
   end
 end
 
-butterscotch = Pet.new('cat', 'Butterscotch')
-pudding      = Pet.new('cat', 'Pudding')
-darwin       = Pet.new('bearded dragon', 'Darwin')
-kennedy      = Pet.new('dog', 'Kennedy')
-sweetie      = Pet.new('parakeet', 'Sweetie Pie')
-molly        = Pet.new('dog', 'Molly')
-chester      = Pet.new('fish', 'Chester')
+class Catamaran < Seacraft
+end
 
-phanson = Owner.new('P Hanson')
-bholmes = Owner.new('B Holmes')
-
-shelter = Shelter.new
-
-shelter.adopt(phanson, butterscotch)
-shelter.adopt(phanson, pudding)
-shelter.adopt(phanson, darwin)
-shelter.adopt(bholmes, kennedy)
-shelter.adopt(bholmes, sweetie)
-shelter.adopt(bholmes, molly)
-shelter.adopt(bholmes, chester)
-
-shelter.print_adoptions
-
-puts "#{phanson.name} has #{phanson.number_of_pets} adopted pets."
-puts "#{bholmes.name} has #{bholmes.number_of_pets} adopted pets."
+class Motorboat < Seacraft
+  def initialize(km_traveled_per_liter, liters_of_fuel_capacity)
+    super(1, 1, km_traveled_per_liter, liters_of_fuel_capacity)
+  end
+end

@@ -37,7 +37,52 @@ class Shelter
   end 
 end 
 
+# second attempt
 
+class Shelter
+  def initialize
+    @records = []
+  end
+
+  def adopt(adopter, adoptee)
+    adopter.pets << adoptee
+    @records << adopter unless @records.include?(adopter)
+  end
+
+  def print_adoptions
+    @records.each do |adopter|
+      puts "#{adopter.name} has adopted the following pets:"
+      adopter.pets.each { |pet| puts pet }
+    end
+  end
+end
+
+class Pet
+  attr_reader :breed, :name
+
+  def initialize(breed, name)
+    @breed = breed
+    @name = name
+  end
+
+  def to_s
+    "a #{breed} named #{name}"
+  end
+end
+
+class Owner
+  attr_reader :name
+  attr_accessor :pets
+
+  def initialize(name)
+    @name = name
+    @pets = []
+  end
+
+  def number_of_pets
+    @pets.size
+  end
+end
 
 butterscotch = Pet.new('cat', 'Butterscotch')
 pudding      = Pet.new('cat', 'Pudding')
