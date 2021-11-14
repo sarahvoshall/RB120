@@ -1,10 +1,3 @@
-=begin
-- organize methods within classes
-- migrate human or computer specific methods in TTTGame to respective classes
-- write a module to validate input
-  - make floats an invalid input for square choice
-- move game setup to a module
-=end
 module Format
   def joinor(array)
     case array.size
@@ -16,10 +9,6 @@ module Format
       end.join(' ')
     end
   end
-
-  def clear
-    system 'clear'
-  end
 end
 
 module Display
@@ -29,12 +18,16 @@ module Display
   end
 
   def display_board
-    puts "You are a #{human.marker}. #{computer.name} is a #{computer.marker}."
+    puts "You are #{human.marker}. #{computer.name} is #{computer.marker}."
     puts
     display_scoreboard
     puts
     board.draw
     puts
+  end
+
+  def clear
+    system 'clear'
   end
 
   def clear_screen_and_display_board
@@ -87,6 +80,12 @@ module Display
     puts "#{computer.name}: #{computer.score}"
   end
 
+  def clear_scoreboard
+    reset
+    human.score = 0
+    computer.score = 0
+  end
+
   def display_play_again_message
     puts "Let's play again!"
     puts ""
@@ -97,32 +96,82 @@ module Display
   end
 end
 
-# module AI
-#   def defend_square?
-#     board.find_at_risk_square(human.marker)
-#   end
+module ValidateUserInput
+  def valid_integer?(number)
+    number % 1 == 0
+  end
 
-#   def defend_square
-#     board[defend_square?] = computer.marker
-#   end
+  def valid_input?(message, inputs)
+    answer = nil
+    loop do
+      puts message
+      answer = gets.chomp.downcase
+      break if inputs.include?(answer)
+      puts "Sorry, must be #{joinor(inputs)}."
+    end
+    answer
+  end
 
-#   def attack_square
-#     board[attack_square?] = computer.marker
-#   end
+  def valid_marker
+    answer = nil
+    loop do
+      puts "Choose any character (except 'O') for your marker."
+      answer = gets.chomp
+      break if answer.size == 1 && answer.upcase != 'O'
+      puts "Sorry, that's not a valid choice."
+    end
+    answer
+  end
 
-#   # return nil or square
-#   def attack_square?
-#     board.find_at_risk_square(computer.marker)
-#   end
+  def valid_name
+    answer = nil
+    loop do
+      puts "What is your name?"
+      answer = gets.chomp.capitalize
+      break unless answer.empty? || Computer::COMPUTER_NAMES.include?(answer)
+      puts "Sorry that's not a valid choice."
+    end
+    answer
+  end
+end
 
-#   def choose_center_square
-#     board[Board::CENTER_SQUARE] = computer.marker
-#   end
+module AI
+  def ai_strategy
+    if attack_square?
+      attack_square
+    elsif defend_square?
+      defend_square
+    elsif board.squares[Board::CENTER_SQUARE].unmarked?
+      choose_center_square
+    else
+      choose_random_square
+    end
+  end
 
-#   def choose_random_square
-#     board[board.unmarked_keys.sample] = computer.marker
-#   end
-# end
+  def defend_square?
+    board.find_at_risk_square(human.marker)
+  end
+
+  def defend_square
+    board[defend_square?] = computer.marker
+  end
+
+  def attack_square
+    board[attack_square?] = computer.marker
+  end
+
+  def attack_square?
+    board.find_at_risk_square(computer.marker)
+  end
+
+  def choose_center_square
+    board[Board::CENTER_SQUARE] = computer.marker
+  end
+
+  def choose_random_square
+    board[board.unmarked_keys.sample] = computer.marker
+  end
+end
 
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
@@ -169,10 +218,9 @@ class Board
   end
 
   def someone_won?
-    !!winning_marker # !! turns truthy value to true and falsey value to false
+    !!winning_marker
   end
 
-  # return winning marker or nil
   def winning_marker
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
@@ -236,7 +284,9 @@ class Square
 end
 
 class Player
+  include Display
   include Format
+  include ValidateUserInput
 
   attr_accessor :marker, :name, :score
 
@@ -254,31 +304,17 @@ class Human < Player
 
   def set_name
     clear
-    answer = nil
-    loop do
-      puts "What is your name?"
-      answer = gets.chomp.capitalize
-      break unless answer.empty? or Computer::COMPUTER_NAMES.include?(answer)
-      puts "Sorry that's not a valid choice."
-    end
-    @name = answer
+    @name = valid_name
   end
 
   def choose_marker
     clear
-    answer = nil
-    loop do
-      puts "Choose any character (except 'O') for your marker."
-      answer = gets.chomp
-      break if answer.size == 1 && answer.upcase != 'O'
-      puts "Sorry, that's not a valid choice."
-    end
-    @marker = answer.upcase
+    @marker = valid_marker.upcase
   end
 end
 
 class Computer < Player
-  COMPUTER_NAMES = ['Iggy', 'Jameson', 'George', 'Schumann']
+  COMPUTER_NAMES = ['Iggy', 'Jameson', 'Pete Hanson', 'Genevieve']
 
   def initialize
     super
@@ -291,8 +327,10 @@ class Computer < Player
 end
 
 class TTTGame
+  include AI
   include Display
   include Format
+  include ValidateUserInput
 
   MAX_WINS = 3
 
@@ -308,13 +346,7 @@ class TTTGame
   def play
     display_welcome_message
     choose_first_player
-    loop do
-      main_game
-      display_match_result
-      break unless play_again?
-      clear_scoreboard
-      display_play_again_message
-    end
+    play_match
     display_goodbye_message
   end
 
@@ -322,25 +354,15 @@ class TTTGame
 
   def choose_first_player
     clear
-    answer = nil
-    loop do
-      puts "Who goes first? (y)ou, (c)omputer, (r)andom"
-      answer = gets.chomp.downcase
-      break if %w(y c r).include?(answer)
-      puts "Sorry, that's not a valid choice."
-    end
+    message = "Who goes first? (y)ou, (c)omputer, (r)andom"
+    valid_inputs = %w(y c r)
+    answer = valid_input?(message, valid_inputs)
 
     clear
     display_first_player(answer)
   end
 
-  def clear_scoreboard
-    reset
-    human.score = 0
-    computer.score = 0
-  end
-
-  def main_game
+  def play_round
     loop do
       display_board
       player_move
@@ -352,20 +374,18 @@ class TTTGame
     end
   end
 
-  def next_game
-    puts "Hit any key to start the next round!"
-    gets
-  end
-
-  def update_score
-    case board.winning_marker
-    when human.marker then human.score += 1
-    when computer.marker then computer.score += 1
+  def play_match
+    loop do
+      play_round
+      display_match_result
+      break unless play_again?
+      clear_scoreboard
+      display_play_again_message
     end
   end
 
-  def champion?
-    human.score == MAX_WINS || computer.score == MAX_WINS
+  def human_turn?
+    @current_player == human.marker
   end
 
   def player_move
@@ -373,57 +393,6 @@ class TTTGame
       current_player_moves
       break if board.someone_won? || board.full?
       clear_screen_and_display_board if human_turn?
-    end
-  end
-
-  def human_moves
-    puts "Choose a square: #{joinor(board.unmarked_keys)}"
-    square = nil
-    loop do
-      square = gets.chomp.to_i
-      break if board.unmarked_keys.include?(square)
-      puts "Sorry, that's not a valid choice."
-    end
-
-    board[square] = human.marker
-  end
-
-  # in Computer class
-  # return nil or square
-  def defend_square?
-    board.find_at_risk_square(human.marker)
-  end
-
-  def defend_square
-    board[defend_square?] = computer.marker
-  end
-
-  def attack_square
-    board[attack_square?] = computer.marker
-  end
-
-  # return nil or square
-  def attack_square?
-    board.find_at_risk_square(computer.marker)
-  end
-
-  def choose_center_square
-    board[Board::CENTER_SQUARE] = computer.marker
-  end
-
-  def choose_random_square
-    board[board.unmarked_keys.sample] = computer.marker
-  end
-
-  def computer_moves
-    if attack_square?
-      attack_square
-    elsif defend_square?
-      defend_square
-    elsif board.squares[Board::CENTER_SQUARE].unmarked?
-      choose_center_square
-    else
-      choose_random_square
     end
   end
 
@@ -437,26 +406,48 @@ class TTTGame
     end
   end
 
-  def human_turn?
-    @current_player == human.marker
-  end
-
-  def play_again?
-    answer = nil
+  def human_moves
+    puts "Choose a square: #{joinor(board.unmarked_keys)}"
+    square = nil
     loop do
-      puts "Do you want to start another match? (y/n)"
-      answer = gets.chomp.downcase
-      break if %w(y n).include?(answer)
-      puts "Sorry, must be y or n."
+      square = gets.chomp.to_f
+      break if board.unmarked_keys.include?(square) && valid_integer?(square)
+      puts "Sorry, that's not a valid choice."
     end
 
-    answer == 'y'
+    board[square.to_i] = human.marker
+  end
+
+  def computer_moves
+    ai_strategy
+  end
+
+  def update_score
+    case board.winning_marker
+    when human.marker then human.score += 1
+    when computer.marker then computer.score += 1
+    end
+  end
+
+  def next_game
+    puts "Hit any key to start the next round!"
+    gets
   end
 
   def reset
     board.reset
     @current_player = human.marker
     clear
+  end
+
+  def champion?
+    human.score == MAX_WINS || computer.score == MAX_WINS
+  end
+
+  def play_again?
+    message = "Do you want to start another match? (y/n)"
+    valid_inputs = %w(y n)
+    valid_input?(message, valid_inputs) == 'y'
   end
 end
 
