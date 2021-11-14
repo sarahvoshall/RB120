@@ -13,6 +13,7 @@ end
 
 module Display
   def display_welcome_message
+    clear
     puts "Welcome to Tic Tac Toe!"
     puts
   end
@@ -96,6 +97,24 @@ module Display
   end
 end
 
+module Setup
+  def setup
+    human.set_name
+    human.choose_marker
+    choose_first_player
+  end
+
+  def choose_first_player
+    clear
+    message = "Who goes first? (y)ou, (c)omputer, (r)andom"
+    valid_inputs = %w(y c r)
+    answer = valid_input?(message, valid_inputs)
+
+    clear
+    display_first_player(answer)
+  end
+end
+
 module ValidateUserInput
   def valid_integer?(number)
     number % 1 == 0
@@ -116,7 +135,7 @@ module ValidateUserInput
     answer = nil
     loop do
       puts "Choose any character (except 'O') for your marker."
-      answer = gets.chomp
+      answer = gets.chomp.strip
       break if answer.size == 1 && answer.upcase != 'O'
       puts "Sorry, that's not a valid choice."
     end
@@ -127,7 +146,7 @@ module ValidateUserInput
     answer = nil
     loop do
       puts "What is your name?"
-      answer = gets.chomp.capitalize
+      answer = gets.chomp.strip.capitalize
       break unless answer.empty? || Computer::COMPUTER_NAMES.include?(answer)
       puts "Sorry that's not a valid choice."
     end
@@ -136,40 +155,26 @@ module ValidateUserInput
 end
 
 module AI
-  def ai_strategy
-    if attack_square?
-      attack_square
-    elsif defend_square?
-      defend_square
+  def ai_strategy(board)
+    square = board.key_of_at_risk_square
+
+    if board.marker_of_at_risk_square == marker
+      board[square] = marker
+    elsif !board.marker_of_at_risk_square.nil?
+      board[square] = marker
     elsif board.squares[Board::CENTER_SQUARE].unmarked?
-      choose_center_square
+      choose_center_square(board)
     else
-      choose_random_square
+      choose_random_square(board)
     end
   end
 
-  def defend_square?
-    board.find_at_risk_square(human.marker)
+  def choose_center_square(board)
+    board[Board::CENTER_SQUARE] = marker
   end
 
-  def defend_square
-    board[defend_square?] = computer.marker
-  end
-
-  def attack_square
-    board[attack_square?] = computer.marker
-  end
-
-  def attack_square?
-    board.find_at_risk_square(computer.marker)
-  end
-
-  def choose_center_square
-    board[Board::CENTER_SQUARE] = computer.marker
-  end
-
-  def choose_random_square
-    board[board.unmarked_keys.sample] = computer.marker
+  def choose_random_square(board)
+    board[board.unmarked_keys.sample] = marker
   end
 end
 
@@ -235,11 +240,22 @@ class Board
     (1..9).each { |key| @squares[key] = Square.new }
   end
 
-  # return key of at risk square
-  def find_at_risk_square(marker)
+  # write a method to return marker of at risk square
+  def marker_of_at_risk_square
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
-      if identical_squares?(squares, 2) && return_markers(squares).max == marker
+      if identical_squares?(squares, 2)
+        return return_markers(squares).first
+      end
+    end
+    nil
+  end
+
+  # return key of at risk square
+  def key_of_at_risk_square
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      if identical_squares?(squares, 2)
         line.each do |num|
           return num if @squares[num].marker == Square::INITIAL_MARKER
         end
@@ -291,19 +307,12 @@ class Player
   attr_accessor :marker, :name, :score
 
   def initialize
-    set_name
     @score = 0
   end
 end
 
 class Human < Player
-  def initialize
-    super
-    choose_marker
-  end
-
   def set_name
-    clear
     @name = valid_name
   end
 
@@ -311,25 +320,44 @@ class Human < Player
     clear
     @marker = valid_marker.upcase
   end
+
+  def moves(board)
+    puts "Choose a square: #{joinor(board.unmarked_keys)}"
+    square = nil
+    loop do
+      square = gets.chomp.to_f
+      break if board.unmarked_keys.include?(square) && valid_integer?(square)
+      puts "Sorry, that's not a valid choice."
+    end
+
+    board[square.to_i] = marker
+  end
 end
 
 class Computer < Player
+  include AI
+
   COMPUTER_NAMES = ['Iggy', 'Jameson', 'Pete Hanson', 'Genevieve']
 
   def initialize
     super
     @marker = "O"
+    set_name
   end
 
   def set_name
     @name = COMPUTER_NAMES.sample
   end
+
+  def moves(board)
+    ai_strategy(board)
+  end
 end
 
 class TTTGame
-  include AI
   include Display
   include Format
+  include Setup
   include ValidateUserInput
 
   MAX_WINS = 3
@@ -345,22 +373,12 @@ class TTTGame
 
   def play
     display_welcome_message
-    choose_first_player
+    setup
     play_match
     display_goodbye_message
   end
 
   private
-
-  def choose_first_player
-    clear
-    message = "Who goes first? (y)ou, (c)omputer, (r)andom"
-    valid_inputs = %w(y c r)
-    answer = valid_input?(message, valid_inputs)
-
-    clear
-    display_first_player(answer)
-  end
 
   def play_round
     loop do
@@ -398,28 +416,12 @@ class TTTGame
 
   def current_player_moves
     if human_turn?
-      human_moves
+      human.moves(board)
       @current_player = computer.marker
     else
-      computer_moves
+      computer.moves(board)
       @current_player = human.marker
     end
-  end
-
-  def human_moves
-    puts "Choose a square: #{joinor(board.unmarked_keys)}"
-    square = nil
-    loop do
-      square = gets.chomp.to_f
-      break if board.unmarked_keys.include?(square) && valid_integer?(square)
-      puts "Sorry, that's not a valid choice."
-    end
-
-    board[square.to_i] = human.marker
-  end
-
-  def computer_moves
-    ai_strategy
   end
 
   def update_score
