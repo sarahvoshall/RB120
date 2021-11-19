@@ -1,457 +1,300 @@
-module Format
-  def joinor(array)
-    case array.size
-    when 1 then array[0]
-    when 2 then array.join(" or ")
+class Card
+  SUITS = ['H', 'D', 'S', 'C']
+  FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+
+  def initialize(suit, face)
+    @suit = suit
+    @face = face
+  end
+
+  def to_s
+    "The #{face} of #{suit}"
+  end
+
+  def face
+    case @face
+    when 'J' then 'Jack'
+    when 'Q' then 'Queen'
+    when 'K' then 'King'
+    when 'A' then 'Ace'
     else
-      array.map do |element|
-        element == array.last ? "or #{element}" : "#{element},"
-      end.join(' ')
+      @face
     end
+  end
+
+  def suit
+    case @suit
+    when 'H' then 'Hearts'
+    when 'D' then 'Diamonds'
+    when 'S' then 'Spades'
+    when 'C' then 'Clubs'
+    end
+  end
+
+  def ace?
+    face == 'Ace'
+  end
+
+  def king?
+    face == 'King'
+  end
+
+  def queen?
+    face == 'Queen'
+  end
+
+  def jack?
+    face == 'Jack'
   end
 end
 
-module Display
-  def display_welcome_message
-    clear
-    puts "Welcome to Tic Tac Toe!"
-    puts
+class Deck
+  attr_accessor :cards
+
+  def initialize
+    @cards = []
+    Card::SUITS.each do |suit|
+      Card::FACES.each do |face|
+        @cards << Card.new(suit, face)
+      end
+    end
+
+    scramble!
   end
 
-  def display_board
-    puts "You are #{human.marker}. #{computer.name} is #{computer.marker}."
-    puts
-    display_scoreboard
-    puts
-    board.draw
-    puts
+  def scramble!
+    cards.shuffle!
   end
 
-  def clear
-    system 'clear'
+  def deal_one
+    cards.pop
+  end
+end
+
+module Hand
+  def show_hand
+    puts "---- #{name}'s Hand ----"
+    cards.each do |card|
+      puts "=> #{card}"
+    end
+    puts "=> Total: #{total}"
+    puts ""
   end
 
-  def clear_screen_and_display_board
-    clear
-    display_board
+  def total
+    total = 0
+    cards.each do |card|
+      if card.ace?
+        total += 11
+      elsif card.jack? || card.queen? || card.king?
+        total += 10
+      else
+        total += card.face.to_i
+      end
+    end
+
+    # correct for Aces
+    cards.select(&:ace?).count.times do
+      break if total <= 21
+      total -= 10
+    end
+
+    total
   end
 
-  # rubocop:disable Metrics/MethodLength
-  def display_first_player(answer)
-    case answer
-    when 'y'
-      @current_player = human.marker
-      puts "#{human.name} is going first!"
-    when 'c'
-      @current_player = computer.marker
-      puts "#{computer.name} is going first!"
-    when 'r'
-      random = [human, computer].sample
-      @current_player = random.marker
-      puts "#{random.name} is going first!"
+  def add_card(new_card)
+    cards << new_card
+  end
+
+  def busted?
+    total > 21
+  end
+end
+
+class Participant
+  include Hand
+
+  attr_accessor :name, :cards
+  def initialize
+    @cards = []
+    set_name
+  end
+end
+
+class Player < Participant
+  def set_name
+    name = ''
+    loop do
+      puts "What's your name?"
+      name = gets.chomp
+      break unless name.empty?
+      puts "Sorry, must enter a value."
+    end
+    self.name = name
+  end
+
+  def show_flop
+    show_hand
+  end
+end
+
+class Dealer < Participant
+  ROBOTS = ['R2D2', 'Hal', 'Chappie', 'Sonny', 'Number 5']
+
+  def set_name
+    self.name = ROBOTS.sample
+  end
+
+  def show_flop
+    puts "---- #{name}'s Hand ----"
+    puts "#{cards.first}"
+    puts " ?? "
+    puts ""
+  end
+end
+
+class TwentyOne
+  attr_accessor :deck, :player, :dealer
+
+  def initialize
+    @deck = Deck.new
+    @player = Player.new
+    @dealer = Dealer.new
+  end
+
+  def reset
+    self.deck = Deck.new
+    player.cards = []
+    dealer.cards = []
+  end
+
+  def deal_cards
+    2.times do
+      player.add_card(deck.deal_one)
+      dealer.add_card(deck.deal_one)
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
-  def display_round_result
-    clear_screen_and_display_board
+  def show_flop
+    player.show_flop
+    dealer.show_flop
+  end
 
-    case board.winning_marker
-    when human.marker
-      puts "#{human.name} won this round!"
-    when computer.marker
-      puts "#{computer.name} won this round!"
+  def player_turn
+    puts "#{player.name}'s turn..."
+
+    loop do
+      puts "Would you like to (h)it or (s)tay?"
+      answer = nil
+      loop do
+        answer = gets.chomp.downcase
+        break if ['h', 's'].include?(answer)
+        puts "Sorry, must enter 'h' or 's'."
+      end
+
+      if answer == 's'
+        puts "#{player.name} stays!"
+        break
+      elsif player.busted?
+        break
+      else
+        # show update only for hit
+        player.add_card(deck.deal_one)
+        puts "#{player.name} hits!"
+        player.show_hand
+        break if player.busted?
+      end
+    end
+  end
+
+  def dealer_turn
+    puts "#{dealer.name}'s turn..."
+
+    loop do
+      if dealer.total >= 17 && !dealer.busted?
+        puts "#{dealer.name} stays!"
+        break
+      elsif dealer.busted?
+        break
+      else
+        puts "#{dealer.name} hits!"
+        dealer.add_card(deck.deal_one)
+      end
+    end
+  end
+
+  def show_busted
+    if player.busted?
+      puts "It looks like #{player.name} busted! #{dealer.name} wins!"
+    elsif dealer.busted?
+      puts "It looks like #{dealer.name} busted! #{player.name} wins!"
+    end
+  end
+
+  def show_cards
+    player.show_hand
+    dealer.show_hand
+  end
+
+  def show_result
+    if player.total > dealer.total
+      puts "It looks like #{player.name} wins!"
+    elsif player.total < dealer.total
+      puts "It looks like #{dealer.name} wins!"
     else
       puts "It's a tie!"
     end
   end
 
-  def display_match_result
-    clear_screen_and_display_board
-
-    if human.score > computer.score
-      puts "#{human.name} won this match!"
-    else
-      puts "#{computer.name} won this match!"
-    end
-  end
-
-  def display_scoreboard
-    puts "#{human.name}: #{human.score}"
-    puts "#{computer.name}: #{computer.score}"
-  end
-
-  def clear_scoreboard
-    reset
-    human.score = 0
-    computer.score = 0
-  end
-
-  def display_play_again_message
-    puts "Let's play again!"
-    puts ""
-  end
-
-  def display_goodbye_message
-    puts "Thanks for playing Tic Tac Toe! Goodbye!"
-  end
-end
-
-module Setup
-  def setup
-    human.set_name
-    human.choose_marker
-    choose_first_player
-  end
-
-  def choose_first_player
-    clear
-    message = "Who goes first? (y)ou, (c)omputer, (r)andom"
-    valid_inputs = %w(y c r)
-    answer = valid_input?(message, valid_inputs)
-
-    clear
-    display_first_player(answer)
-  end
-end
-
-module ValidateUserInput
-  def valid_integer?(number)
-    number % 1 == 0
-  end
-
-  def valid_input?(message, inputs)
+  def play_again?
     answer = nil
     loop do
-      puts message
+      puts "Would you like to play again? (y/n)"
       answer = gets.chomp.downcase
-      break if inputs.include?(answer)
-      puts "Sorry, must be #{joinor(inputs)}."
+      break if ['y', 'n'].include? answer
+      puts "Sorry, must be y or n."
     end
-    answer
+
+    answer == 'y'
   end
 
-  def valid_marker
-    answer = nil
+  def start
     loop do
-      puts "Choose any character (except 'O') for your marker."
-      answer = gets.chomp.strip
-      break if answer.size == 1 && answer.upcase != 'O'
-      puts "Sorry, that's not a valid choice."
-    end
-    answer
-  end
+      system 'clear'
+      deal_cards
+      show_flop
 
-  def valid_name
-    answer = nil
-    loop do
-      puts "What is your name?"
-      answer = gets.chomp.strip.capitalize
-      break unless answer.empty? || Computer::COMPUTER_NAMES.include?(answer)
-      puts "Sorry that's not a valid choice."
-    end
-    answer
-  end
-end
-
-module AI
-  def ai_strategy(board)
-    square = board.key_of_at_risk_square
-
-    if board.marker_of_at_risk_square == marker
-      board[square] = marker
-    elsif !board.marker_of_at_risk_square.nil?
-      board[square] = marker
-    elsif board.squares[Board::CENTER_SQUARE].unmarked?
-      choose_center_square(board)
-    else
-      choose_random_square(board)
-    end
-  end
-
-  def choose_center_square(board)
-    board[Board::CENTER_SQUARE] = marker
-  end
-
-  def choose_random_square(board)
-    board[board.unmarked_keys.sample] = marker
-  end
-end
-
-class Board
-  WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
-                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +
-                  [[1, 5, 9], [3, 5, 7]]
-
-  CENTER_SQUARE = 5
-
-  attr_accessor :squares
-
-  def initialize
-    @squares = {}
-    reset
-  end
-
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  def draw
-    puts "     |     |     "
-    puts "  #{squares[1]}  |  #{squares[2]}  |  #{squares[3]}  "
-    puts "     |     |     "
-    puts "-----+-----+-----"
-    puts "     |     |     "
-    puts "  #{squares[4]}  |  #{squares[5]}  |  #{squares[6]}  "
-    puts "     |     |     "
-    puts "-----+-----+-----"
-    puts "     |     |     "
-    puts "  #{squares[7]}  |  #{squares[8]}  |  #{squares[9]}  "
-    puts "     |     |     "
-  end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
-
-  def []=(square, marker)
-    @squares[square].marker = marker
-  end
-
-  def unmarked_keys
-    @squares.keys.select { |key| @squares[key].unmarked? }
-  end
-
-  def full?
-    unmarked_keys.empty?
-  end
-
-  def someone_won?
-    !!winning_marker
-  end
-
-  def winning_marker
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      if identical_squares?(squares, 3)
-        return squares.first.marker
-      end
-    end
-    nil
-  end
-
-  def reset
-    (1..9).each { |key| @squares[key] = Square.new }
-  end
-
-  # write a method to return marker of at risk square
-  def marker_of_at_risk_square
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      if identical_squares?(squares, 2)
-        return return_markers(squares).first
-      end
-    end
-    nil
-  end
-
-  # return key of at risk square
-  def key_of_at_risk_square
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      if identical_squares?(squares, 2)
-        line.each do |num|
-          return num if @squares[num].marker == Square::INITIAL_MARKER
+      player_turn
+      if player.busted?
+        show_busted
+        if play_again?
+          reset
+          next
+        else
+          break
         end
       end
+
+      dealer_turn
+      if dealer.busted?
+        show_busted
+        if play_again?
+          reset
+          next
+        else
+          break
+        end
+      end
+
+      # both stayed
+      show_cards
+      show_result
+      play_again? ? reset : break
     end
-    nil
-  end
 
-  private
-
-  def return_markers(squares)
-    squares.select(&:marked?).map(&:marker)
-  end
-
-  def identical_squares?(squares, number)
-    markers = return_markers(squares)
-    return false if markers.size != number
-    markers.min == markers.max
+    puts "Thank you for playing Twenty-One. Goodbye!"
   end
 end
 
-class Square
-  INITIAL_MARKER = " "
-
-  attr_accessor :marker
-
-  def initialize(marker=INITIAL_MARKER)
-    @marker = marker
-  end
-
-  def to_s
-    @marker
-  end
-
-  def unmarked?
-    marker == INITIAL_MARKER
-  end
-
-  def marked?
-    marker != INITIAL_MARKER
-  end
-end
-
-class Player
-  include Display
-  include Format
-  include ValidateUserInput
-
-  attr_accessor :marker, :name, :score
-
-  def initialize
-    @score = 0
-  end
-end
-
-class Human < Player
-  def set_name
-    @name = valid_name
-  end
-
-  def choose_marker
-    clear
-    @marker = valid_marker.upcase
-  end
-
-  def moves(board)
-    puts "Choose a square: #{joinor(board.unmarked_keys)}"
-    square = nil
-    loop do
-      square = gets.chomp.to_f
-      break if board.unmarked_keys.include?(square) && valid_integer?(square)
-      puts "Sorry, that's not a valid choice."
-    end
-
-    board[square.to_i] = marker
-  end
-end
-
-class Computer < Player
-  include AI
-
-  COMPUTER_NAMES = ['Iggy', 'Jameson', 'Pete Hanson', 'Genevieve']
-
-  def initialize
-    super
-    @marker = "O"
-    set_name
-  end
-
-  def set_name
-    @name = COMPUTER_NAMES.sample
-  end
-
-  def moves(board)
-    ai_strategy(board)
-  end
-end
-
-class TTTGame
-  include Display
-  include Format
-  include Setup
-  include ValidateUserInput
-
-  MAX_WINS = 3
-
-  attr_reader :board, :human, :computer
-
-  def initialize
-    @board = Board.new
-    @human = Human.new
-    @computer = Computer.new
-    @current_player = human.marker
-  end
-
-  def play
-    display_welcome_message
-    setup
-    play_match
-    display_goodbye_message
-  end
-
-  private
-
-  def play_round
-    loop do
-      display_board
-      player_move
-      update_score
-      display_round_result
-      break if champion?
-      next_game
-      reset
-    end
-  end
-
-  def play_match
-    loop do
-      play_round
-      display_match_result
-      break unless play_again?
-      clear_scoreboard
-      display_play_again_message
-    end
-  end
-
-  def human_turn?
-    @current_player == human.marker
-  end
-
-  def player_move
-    loop do
-      current_player_moves
-      break if board.someone_won? || board.full?
-      clear_screen_and_display_board if human_turn?
-    end
-  end
-
-  def current_player_moves
-    if human_turn?
-      human.moves(board)
-      @current_player = computer.marker
-    else
-      computer.moves(board)
-      @current_player = human.marker
-    end
-  end
-
-  def update_score
-    case board.winning_marker
-    when human.marker then human.score += 1
-    when computer.marker then computer.score += 1
-    end
-  end
-
-  def next_game
-    puts "Hit any key to start the next round!"
-    gets
-  end
-
-  def reset
-    board.reset
-    @current_player = human.marker
-    clear
-  end
-
-  def champion?
-    human.score == MAX_WINS || computer.score == MAX_WINS
-  end
-
-  def play_again?
-    message = "Do you want to start another match? (y/n)"
-    valid_inputs = %w(y n)
-    valid_input?(message, valid_inputs) == 'y'
-  end
-end
-
-game = TTTGame.new
-game.play
+game = TwentyOne.new
+game.start
