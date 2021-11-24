@@ -35,13 +35,19 @@ module Hand
       when 'Jack'   then total += 10
       when 'Queen'  then total += 10
       when 'King'   then total += 10
-      when 'Ace'    then total + 11 > 21 ? total += 1 : total += 11
+      when 'Ace'    then total += evaluate_aces(total)
       else               total += card.value.to_i
       end
     end
     total
   end
   # rubocop:enable Metrics/MethodLength
+
+  private
+
+  def evaluate_aces(total)
+    total + 11 > 21 ? 1 : 11
+  end
 end
 
 class Player
@@ -62,14 +68,31 @@ class Human < Player
     answer = nil
     loop do
       puts "What is your name?"
-      answer = gets.chomp.strip
-      break unless answer.empty?
+      answer = gets.chomp.strip.capitalize
+      break unless answer.empty? || Computer::ONE_DIRECTION.include?(answer)
       puts "Sorry, that's not a valid choice."
     end
-    answer.capitalize
+    answer
   end
 
-  def choose_hit_or_stay
+  def take_turn(deck)
+    loop do
+      hit = choose_hit_or_stay?
+      clear
+      if hit
+        hit(deck)
+        break if busted?
+        show_cards
+      else
+        stay
+        break
+      end
+    end
+  end
+
+  private
+
+  def choose_hit_or_stay?
     answer = nil
     loop do
       puts "#{name}'s turn..."
@@ -78,28 +101,15 @@ class Human < Player
       break if %w(h s).include?(answer)
       puts "Sorry, your answer must be 'h' or 's'."
     end
-    answer
-  end
-
-  def take_turn(deck)
-    loop do
-      if choose_hit_or_stay == 'h'
-        clear
-        hit(deck)
-        break if busted?
-        show_cards
-      else
-        clear
-        stay
-        break
-      end
-    end
+    answer == 'h'
   end
 end
 
 class Computer < Player
+  ONE_DIRECTION = %w(Harry Niall Louis Zayn Liam)
+
   def set_name
-    %w(Harry Niall Louis Zayn Liam).sample
+    ONE_DIRECTION.sample
   end
 
   def take_turn(deck)
