@@ -1,3 +1,5 @@
+require 'pry'
+
 class Card
   include Comparable
 
@@ -50,10 +52,15 @@ class Deck
 end
 
 class PokerHand
+  attr_reader :hand
+
   def initialize(deck)
+    @hand = []
+    5.times { @hand << deck.draw }
   end
 
   def print
+    puts hand
   end
 
   def evaluate
@@ -73,31 +80,59 @@ class PokerHand
 
   private
 
-  def royal_flush?
+  def ranks
+    hand.collect(&:return_value).sort
   end
 
-  def straight_flush?
+  def n_of_a_kind?(n)
+    ranks.each do |value|
+      return true if ranks.count(value) == n
+    end
+
+    false
   end
 
-  def four_of_a_kind?
+  def royal_flush? # five of the same in sequence: A K Q J 10
+    ranks.max == 14 && straight_flush?
   end
 
-  def full_house?
+  def straight_flush? # five of the same in sequence
+    straight? && flush?
   end
 
-  def flush?
+  def four_of_a_kind? # four of the same rank
+    n_of_a_kind?(4)
   end
 
-  def straight?
+  def full_house? # three of one rank and two of another
+    ranks.uniq.count == 2
   end
 
-  def three_of_a_kind?
+  def flush? # five cards of the same suit
+    hand.map(&:suit).uniq.count == 1
   end
 
-  def two_pair?
+  def straight? # any five cards in sequence
+    target = ranks[0]
+
+    ranks.each do |value|
+      return false if target != value
+      target += 1
+    end
+
+    true
   end
 
-  def pair?
+  def three_of_a_kind? # three cards of the same rank
+    n_of_a_kind?(3)
+  end
+
+  def two_pair? # two cards of one rank and two of another
+    ranks.uniq.count == 3
+  end
+
+  def pair? # two cards of one rank
+    n_of_a_kind?(2)
   end
 end
 
@@ -105,13 +140,13 @@ hand = PokerHand.new(Deck.new)
 hand.print
 puts hand.evaluate
 
-# Danger danger danger: monkey
-# patching for testing purposes.
+# # Danger danger danger: monkey
+# # patching for testing purposes.
 class Array
   alias_method :draw, :pop
 end
 
-# Test that we can identify each PokerHand type.
+# # Test that we can identify each PokerHand type.
 hand = PokerHand.new([
   Card.new(10,      'Hearts'),
   Card.new('Ace',   'Hearts'),

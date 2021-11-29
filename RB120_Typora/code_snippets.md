@@ -1,2 +1,3 @@
 1. This code snippet returns `nil` since the instance method `set_name` is never called. Although the instance variable `@name` is instantiated due to the `attr_reader`, it doesn't contain a value until `set_name` is called. 
 2. This code snippet will return `nil` since the `enable_swimming` method wasn't called to instantiate the `@can_swim` instance variable to `true` before the `swim` method call. 
+
