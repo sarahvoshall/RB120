@@ -6,7 +6,7 @@ How inheritance affects variables:
 
 - Instance variables don't exhibit any surprising behavior. They behave similarly to how instance methods do, with the exception that we have to first call the method that initializes the instance variable. After that, the instance can access that instance variable. **This suggest that instance variables and their values are not inherited like instance methods are.** 
 
-**Class Variables**: Class variables can be affected by subclasses. For this reaon, avoid using class variables when working with inheritance. (Use *class instance variables* instead...)
+**Class Variables**: Class variables can be affected by subclasses. For this reason, avoid using class variables when working with inheritance. (Use *class instance variables* instead...)
 
 **Constants**
 

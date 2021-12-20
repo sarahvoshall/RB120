@@ -18,8 +18,6 @@ class GoodDog
 end
 ```
 
-
-
 **Constants** are defined by capitalizing a variable. (Most use all uppercase.) Use constants to avoid hard-coding values. 
 
 **`to_s`** 

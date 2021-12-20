@@ -1,16 +1,16 @@
-module Swimmable
-  def enable_swimming
-    @can_swim = true
+class Cat
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+
+  def say_name
+    puts "My name is #{@name}."
   end
 end
 
-class Dog
-  include Swimmable
+fluffy = Cat.new('Fluffy', 3)
+puffy = Cat.new('Puffy', 2)
 
-  def swim
-    "swimming!" if @can_swim
-  end
-end
-
-teddy = Dog.new
-p teddy.swim 
+fluffy.say_name
+puffy.say_name

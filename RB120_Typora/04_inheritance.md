@@ -32,8 +32,8 @@ Another way to DRY up code in Ruby is to implement modules. Modules allow for ce
 - class inheritance is better for "is a" relationships and interface inheritance is better for "has a" relationships, e.g., a dog "is an" animal and it "has an" ability to swim 
   - class: identity 
   - interface: behavior / ability 
-- modules can't be instantiated, i.e., objects cannot be created from modules. Modules are used only for namespacing and grouping common methods together. 
-- methods in mixin modules should be defined without using `self`. 
+- objects cannot be created from modules: modules are used only for namespacing and grouping common methods together 
+- methods in mixin modules should be defined without using `self`
 
 **Method Lookup Path**: the order in which classes are inspected when you call a method. https://launchschool.com/books/oo_ruby/read/inheritance
 
@@ -55,13 +55,13 @@ Another way to DRY up code in Ruby is to implement modules. Modules allow for ce
 
 Method access control is implemented in Ruby through the use of the `public`, `private`, and `protected` access modifiers. 
 
-- `public` methods are available to anyone who knows either the class name or the object's name . These methods are readily available for the rest of the program to use and *comprise the class's interface (how other classes and objects will interact with this class and its objects)*
+- `public` methods comprise the class's interface (how other classes and objects will interact with this class and its objects)
 - `private` methods are at work in the class but are not available to the rest of the program. `private` methods are only accessible from other `public` methods within the class and are not accessible outside the class definition at all 
   - *Note: Before Ruby 2.7, private methods are only accessible from inside the class when called without `self`. Since 2.7, private methods can be called with `self` as the caller, private methods cannot be called with any other object -- not even one of the same type. You can only call a private method with the current object.*
 - protected methods 
   - inside the class, `protected` methods are accessible like `public` methods
   - outside the class, `protected` methods act like `private` methods 
-  - Note: Since 2.7, the main difference is that `private` methods may noe be called with a *difference instance object* within the public method. However, `protected` methods can be called with a different object within the public method. 
+  - *Note: Since 2.7, the main difference is that `private` methods may not be called with a different instance object within the public method. However, `protected` methods can be called with a different object within the public method.* 
 
 **Accidental Method Overriding**
 
